@@ -1,0 +1,14 @@
+.DS_Store
+.bundle/
+*.swp
+*.swo
+.idea
+~*
+log/*
+tmp/*
+vendor/bundle
+.tags
+.gemtags
+ctags*
+*.sublime-*
+*.gem

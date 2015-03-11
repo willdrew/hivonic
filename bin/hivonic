@@ -1,0 +1,60 @@
+#!/usr/bin/env ruby
+
+# vim: set filetype=ruby:
+
+require 'gli'
+require 'hivonic'
+
+include GLI::App
+include Hivonic::Commands
+
+version Hivonic::VERSION
+
+program_desc 'A simple hive utility application for cleaning up temporary tables'
+
+# arg_name 'database'
+
+regexp      = ENV['HIVONIC_REGEXP']      || '\A(\d{14})_[a-z|_]+\Z'
+time_format = ENV['HIVONIC_TIME_FORMAT'] || '%Y%m%d%H%M%S'
+ttl         = ENV['HIVONIC_TTL']         || 86400
+
+flag ['hive-opts'],     :default_value => '-S' # -hiveconf hive.root.logger=DEBUG -S
+flag ['regexp'],        :default_value => regexp
+flag ['time-format'],   :default_value => time_format
+flag ['ttl'],           :default_value => ttl
+
+# switch [:d, 'debug']
+# switch [:v, 'verbose']
+switch [:n, 'dry-run']
+
+def database_check!(args)
+  exit_now!('No database given!') if args[0].nil? || args[0].empty?
+end
+
+def table_check!(args)
+  exit_now!('No table given!') if args[1].nil? || args[1].empty?
+end
+
+command :list do |c|
+  c.action do |global_options, options, args|
+    database_check!(args)
+    Hivonic::Commands.run 'list_tables', global_options, args
+  end
+end
+
+command :rm do |c|
+  c.action do |global_options, options, args|
+    database_check!(args)
+    table_check!(args)
+    Hivonic::Commands.run 'drop_table', global_options, args
+  end
+end
+
+command :cleanup do |c|
+  c.action do |global_options, options, args|
+    database_check!(args)
+    Hivonic::Commands.run 'cleanup_tables', global_options, args
+  end
+end
+
+exit run(ARGV)
