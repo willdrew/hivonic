@@ -1,2 +1,4 @@
-require 'bundler'
-Bundle.setup
+require 'test/unit'
+require 'shoulda-context'
+require 'mocha/setup'
+require 'hivonic'

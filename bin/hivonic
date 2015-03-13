@@ -14,14 +14,17 @@ program_desc 'A simple hive utility application for cleaning up temporary tables
 
 # arg_name 'database'
 
-regexp      = ENV['HIVONIC_REGEXP']      || '\A(\d{14})_[a-z|_]+\Z'
-time_format = ENV['HIVONIC_TIME_FORMAT'] || '%Y%m%d%H%M%S'
-ttl         = ENV['HIVONIC_TTL']         || 86400
+hive_opts         = ENV['HIVONIC_HIVE_OPTS']        || '-S' # -hiveconf hive.root.logger=DEBUG -S
+regexp            = ENV['HIVONIC_REGEXP']           || '\A(tmp|view)[a-z|_|0-9]+_(\d{14})\Z'
+time_format       = ENV['HIVONIC_TIME_FORMAT']      || '%Y%m%d%H%M%S'
+time_group_index  = ENV['HIVONIC_TIME_GROUP_INDEX'] || 2
+ttl               = ENV['HIVONIC_TTL']              || 86400
 
-flag ['hive-opts'],     :default_value => '-S' # -hiveconf hive.root.logger=DEBUG -S
-flag ['regexp'],        :default_value => regexp
-flag ['time-format'],   :default_value => time_format
-flag ['ttl'],           :default_value => ttl
+flag ['hive-opts'],         :default_value => hive_opts
+flag ['regexp'],            :default_value => regexp
+flag ['time-format'],       :default_value => time_format
+flag ['time-group-index'],  :default_value => time_group_index
+flag ['ttl'],               :default_value => ttl
 
 # switch [:d, 'debug']
 # switch [:v, 'verbose']

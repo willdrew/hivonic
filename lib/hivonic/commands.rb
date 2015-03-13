@@ -1,11 +1,11 @@
 require 'time'
 
-module Hivonic::Commands
-  attr_reader :handlers
+using Hivonic::Common::StringHelper unless RUBY_VERSION < '2.0'
 
+module Hivonic::Commands
   def self.run(cmd, opts, args)
-    handler             = handler_for cmd
-    output, exitstatus  = handler.run opts, args
+    handler            = handler_for cmd
+    output, exitstatus = handler.run opts, args
 
     # Send Subcommand output to STDOUT
     puts output
@@ -19,16 +19,16 @@ module Hivonic::Commands
   end
 
   def self.handler_for(cmd)
-    if handlers
-      handlers[normalize_cmd(cmd)]
+    if @handlers
+      @handlers[normalize_cmd(cmd)]
     else
       raise 'Uh Oh!'
     end
   end
 
   def self.register_handler_for(cmd, handler=nil)
-    normalized_cmd  = normalize_cmd(cmd)
-    handler         = Hivonic::Commands.const_get(normalized_cmd.classify) if handler.nil?
+    normalized_cmd = normalize_cmd(cmd)
+    handler        = Hivonic::Commands.const_get(normalized_cmd.classify) if handler.nil?
 
     @handlers ||= {}
     @handlers[normalized_cmd] = handler
@@ -37,6 +37,7 @@ module Hivonic::Commands
   class Subcommand
     attr_reader :regexp
     attr_reader :time_format
+    attr_reader :time_group_index
     attr_reader :ttl
     attr_reader :query
     attr_reader :subcommand
@@ -44,11 +45,12 @@ module Hivonic::Commands
     attr_reader :exitstatus
 
     def initialize(opts, args)
-      @regexp       = Regexp.new opts['regexp']
-      @time_format  = opts['time-format']
-      @ttl          = opts['ttl']
-      @dry_run      = opts['dry-run']
-      @exitstatus   = 1
+      @regexp           = Regexp.new opts['regexp']
+      @time_format      = opts['time-format']
+      @time_group_index = opts['time-group-index'].to_i
+      @ttl              = opts['ttl'].to_i
+      @dry_run          = opts['dry-run']
+      @exitstatus       = 1
     end
 
     def self.run(opts, args)
@@ -117,7 +119,7 @@ module Hivonic::Commands
       if match.nil?
         false
       else
-        is_expired? Time.strptime(match[1], self.time_format)
+        is_expired? Time.strptime(match[self.time_group_index], self.time_format)
       end
     end
 
@@ -161,11 +163,12 @@ module Hivonic::Commands
 
   class CleanupTables < HiveQueryCommand
     def list_tables
-      opts                = {}
-      opts['regexp']      = self.regexp
-      opts['time-format'] = self.time_format
-      opts['ttl']         = self.ttl
-      opts['hive-opts']   = self.hive_opts
+      opts                     = {}
+      opts['regexp']           = self.regexp
+      opts['time-format']      = self.time_format
+      opts['time-group-index'] = self.time_group_index
+      opts['ttl']              = self.ttl
+      opts['hive-opts']        = self.hive_opts
 
       output, status = ListTables.run opts, [self.db]
       raise 'Uh oh!' unless is_successful? status
@@ -191,6 +194,15 @@ module Hivonic::Commands
 
     def query
       @query = build_query
+    end
+
+    def subcommand
+      if self.query.nil? || self.query.empty?
+        puts 'Nothing to cleanup!'
+        Kernel.exit! 0
+      else
+        super
+      end
     end
   end
 
