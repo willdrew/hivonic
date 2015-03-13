@@ -5,7 +5,7 @@ group :development do
 end
 
 group :test do
-  gem 'rake',              '~> 10.4.0'
-  gem 'mocha',              '~> 1.1.0'
-  gem 'shoulda-context',    '~> 1.2.0'
+  gem 'rake',                       '~> 10.4.0'
+  gem 'mocha',                      '~> 1.1.0'
+  gem 'shoulda-context',            '~> 1.2.0'
 end
