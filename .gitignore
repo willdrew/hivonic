@@ -12,3 +12,7 @@ vendor/bundle
 ctags*
 *.sublime-*
 *.gem
+.envrc
+.ruby-version
+bin/*
+!bin/hivonic

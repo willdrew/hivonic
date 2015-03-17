@@ -8,7 +8,7 @@ module Hivonic::Commands
     output, exitstatus = handler.run opts, args
 
     # Send Subcommand output to STDOUT
-    puts output
+    puts output unless output.nil? || output.empty?
 
     # Return exit status
     exitstatus
@@ -155,7 +155,7 @@ module Hivonic::Commands
     end
 
     def query
-      @query = "DROP TABLE '#{self.db}.#{self.table}';"
+      @query = "DROP TABLE #{self.db}.#{self.table};"
     end
   end
 
