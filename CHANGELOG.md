@@ -1,6 +1,10 @@
 Hivonic Changelog
 ===
 
+0.2.2
+---
+* Fixed issue with mock() instance that represents output from the subcommand in tests
+
 0.2.1
 ---
 * Tweaked HIVONIC_REGEXP env var's default value

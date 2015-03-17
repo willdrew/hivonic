@@ -6,6 +6,7 @@ class Hivonic::CommandsTest < Test::Unit::TestCase
       should 'pass opts and args to #run method of the handler' do
         Hivonic::Commands.expects(:handler_for).with(cmd = mock()).returns(handler = mock())
         handler.expects(:run).with(opts = mock(), args = mock()).returns([output = mock(), exitstatus = mock()])
+        output.expects(:empty?).returns(false)
         assert_equal exitstatus, Hivonic::Commands.run(cmd, opts, args)
       end
     end
