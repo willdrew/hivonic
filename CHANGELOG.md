@@ -1,6 +1,12 @@
 Hivonic Changelog
 ===
 
+0.3.0
+---
+* Now cleans up views in addition to tables
+* Tweaked HIVONIC_REGEXP default so it is a little less opinionated
+* Fixed cleanup, so it no longer calls build_query repeatedly (also a performance improvement)
+
 0.2.2
 ---
 * Fixed issue with mock() instance that represents output from the subcommand in tests
