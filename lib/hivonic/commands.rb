@@ -73,6 +73,7 @@ module Hivonic::Commands
         stdout      = "DRY RUN: Subcommand => #{subcommand}"
         @exitstatus = 0
       else
+        puts "Running: Subcommand => #{subcommand}"
         stdout      = `#{subcommand}`
         @exitstatus = $?.exitstatus
       end
@@ -155,13 +156,26 @@ module Hivonic::Commands
     end
 
     def query
-      @query = "DROP TABLE #{self.db}.#{self.table};"
+      @query = "DROP TABLE IF EXISTS #{self.db}.#{self.table};"
+    end
+  end
+
+  class DropView < HiveQueryCommand
+    attr_reader :view
+
+    def initialize(opts, args)
+      super
+      @view = args[1]
+    end
+
+    def query
+      @query = "DROP VIEW IF EXISTS #{self.db}.#{self.view};"
     end
   end
 
   register_handler_for :drop_table
 
-  class CleanupTables < HiveQueryCommand
+  class CleanupQueryCommand < HiveQueryCommand
     def list_tables
       opts                     = {}
       opts['regexp']           = self.regexp
@@ -172,6 +186,7 @@ module Hivonic::Commands
 
       output, status = ListTables.run opts, [self.db]
       raise 'Uh oh!' unless is_successful? status
+      puts "Expired Tables: \n#{output}\n"
       output.split(/\n/)
     end
 
@@ -181,6 +196,10 @@ module Hivonic::Commands
       end
     end
 
+    def drop_query_for(table, opts)
+      raise NotImplementedError.new 'You must implement drop_query_for method on subclass'
+    end
+
     def build_query
       tables = list_tables
 
@@ -188,12 +207,12 @@ module Hivonic::Commands
         opts           = {}
         opts['regexp'] = self.regexp
 
-        DropTable.new(opts, [self.db, table]).query
+        drop_query_for table, opts
       end.join(' ')
     end
 
     def query
-      @query = build_query
+      @query ||= build_query
     end
 
     def subcommand
@@ -206,5 +225,19 @@ module Hivonic::Commands
     end
   end
 
+  class CleanupTables < CleanupQueryCommand
+    def drop_query_for(table, opts)
+      DropTable.new(opts, [self.db, table]).query
+    end
+  end
+
   register_handler_for :cleanup_tables
+
+  class CleanupViews < CleanupQueryCommand
+    def drop_query_for(table, opts)
+      DropView.new(opts, [self.db, table]).query
+    end
+  end
+
+  register_handler_for :cleanup_views
 end

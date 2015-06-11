@@ -15,7 +15,7 @@ program_desc 'A simple hive utility application for cleaning up temporary tables
 # arg_name 'database'
 
 hive_opts         = ENV['HIVONIC_HIVE_OPTS']        || '-S' # -hiveconf hive.root.logger=DEBUG -S
-regexp            = ENV['HIVONIC_REGEXP']           || '\A(tmp|view)[a-z|_|0-9]+_(\d{14})\z'
+regexp            = ENV['HIVONIC_REGEXP']           || '\A(tmp)[a-z|_|0-9]+_(\d{14})\z'
 time_format       = ENV['HIVONIC_TIME_FORMAT']      || '%Y%m%d%H%M%S'
 time_group_index  = ENV['HIVONIC_TIME_GROUP_INDEX'] || 2
 ttl               = ENV['HIVONIC_TTL']              || 86400
@@ -54,9 +54,17 @@ command :rm do |c|
 end
 
 command :cleanup do |c|
+  c.flag [:type], :default_value => 'tables'
   c.action do |global_options, options, args|
     database_check!(args)
-    Hivonic::Commands.run 'cleanup_tables', global_options, args
+    case options[:type]
+    when 'tables'
+      Hivonic::Commands.run 'cleanup_tables', global_options, args
+    when 'views'
+      Hivonic::Commands.run 'cleanup_views', global_options, args
+    else
+      exit_now!('Unknown type for cleanup command')
+    end
   end
 end
 
