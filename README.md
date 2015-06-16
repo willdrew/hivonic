@@ -27,7 +27,7 @@ This tool requires tmp hive tables to include timestamp as part of the table nam
     * Defaults to '86400' (24 hours)
 
 
-## Hadpuils' Commands
+## Hivonic Commands
 - list __db__
     * Lists all tmp hive tables that match regexp and are expired
 - rm __db__ __table__
